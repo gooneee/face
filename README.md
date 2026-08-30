@@ -1,6 +1,6 @@
 # face
 
-A lightweight, no-framework scroll sequence for GitHub Pages. Scroll through the page to move from the first portrait to the last; the canvas keeps every image centered and contained in the viewport.
+A lightweight, no-framework scroll sequence for GitHub Pages. Scroll through the page to move from the first portrait to the last; the canvas keeps every image centered and contained in the viewport. Its stable small-viewport stage avoids geometry jumps when mobile browser chrome appears or disappears.
 
 ## Local preview
 

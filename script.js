@@ -18,33 +18,55 @@
   var rafStarted = false;
   var reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var dpr = 1;
+  var canvasWidth = 0;
+  var canvasHeight = 0;
+  var imageGutter = 0;
+
+  function stageHeight() {
+    return canvasHeight || document.documentElement.clientHeight;
+  }
 
   function progressFromScroll() {
-    var travel = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
-    return Math.max(0, Math.min(1, window.scrollY / travel));
+    var documentBottom = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+    var stableTravel = Math.max(1, document.documentElement.scrollHeight - stageHeight());
+    if (window.scrollY <= 0) return 0;
+    if (window.scrollY >= documentBottom) return 1;
+    return Math.max(0, Math.min(1, window.scrollY / stableTravel));
   }
 
   function sizeCanvas() {
+    var box = canvas.getBoundingClientRect();
+    var nextWidth = box.width;
+    var nextHeight = box.height;
+    if (!nextWidth || !nextHeight) return;
     dpr = Math.min(window.devicePixelRatio || 1, 2);
-    canvas.width = Math.max(1, Math.round(window.innerWidth * dpr));
-    canvas.height = Math.max(1, Math.round(window.innerHeight * dpr));
-    context.setTransform(dpr, 0, 0, dpr, 0, 0);
+    var dimensionsChanged = nextWidth !== canvasWidth || nextHeight !== canvasHeight;
+    canvasWidth = nextWidth;
+    canvasHeight = nextHeight;
+    // Mirror --image-gutter: clamp(16px, 4vw, 48px) in resolved canvas pixels.
+    imageGutter = Math.min(48, Math.max(16, canvasWidth * 0.04));
+    if (dimensionsChanged || canvas.width !== Math.round(canvasWidth * dpr) || canvas.height !== Math.round(canvasHeight * dpr)) {
+      canvas.width = Math.max(1, Math.round(canvasWidth * dpr));
+      canvas.height = Math.max(1, Math.round(canvasHeight * dpr));
+      context.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
     draw(renderedProgress);
   }
 
   function drawImageContained(image, alpha) {
     if (!image || !image.naturalWidth || !image.naturalHeight) return;
-    var width = window.innerWidth;
-    var height = window.innerHeight;
-    var scale = Math.min(width / image.naturalWidth, height / image.naturalHeight);
+    var width = canvasWidth;
+    var height = canvasHeight;
+    var availableWidth = Math.max(0, width - (imageGutter * 2));
+    var scale = Math.min(availableWidth / image.naturalWidth, height / image.naturalHeight);
     var drawWidth = image.naturalWidth * scale;
     var drawHeight = image.naturalHeight * scale;
     context.globalAlpha = alpha;
-    context.drawImage(image, (width - drawWidth) / 2, (height - drawHeight) / 2, drawWidth, drawHeight);
+    context.drawImage(image, imageGutter + (availableWidth - drawWidth) / 2, (height - drawHeight) / 2, drawWidth, drawHeight);
   }
 
   function draw(progress) {
-    context.clearRect(0, 0, window.innerWidth, window.innerHeight);
+    context.clearRect(0, 0, canvasWidth, canvasHeight);
     var scaled = progress * (FRAME_FILES.length - 1);
     var lower = Math.floor(scaled);
     var upper = Math.min(FRAME_FILES.length - 1, lower + 1);
