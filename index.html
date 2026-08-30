@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="A face, changing with the scroll.">
+    <title>face</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" href="data:,">
+  </head>
+  <body>
+    <main class="page" aria-label="Face progression">
+      <figure class="face-figure">
+        <div class="stage">
+          <canvas id="face-canvas" role="img" aria-label="A face progressing from baby to older age"></canvas>
+        </div>
+        <figcaption class="overlay">face</figcaption>
+        <noscript>
+          <img class="fallback" src="assets/frames/01.JPG" alt="A face at the beginning of the progression">
+        </noscript>
+      </figure>
+      <div class="scroll-container" aria-hidden="true"></div>
+    </main>
+    <script src="script.js"></script>
+  </body>
+</html>
